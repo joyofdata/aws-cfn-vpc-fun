@@ -1,0 +1,43 @@
+Parameters:
+  KeyName:
+    Description: The EC2 Key Pair to allow SSH access to the instance
+    Type: AWS::EC2::KeyPair::KeyName
+  NetworkStack:
+    Description: The network stack for this template
+    Type: String
+    Default: RaffaelNetworkStack
+
+Resources:
+  PublicEc2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      SecurityGroupIds:
+        # !Ref InstanceSecurityGroup gibt nicht die ID, sondern den Namen zurück!
+        - {'Fn::ImportValue': !Sub '${NetworkStack}-PublicInstanceSecurityGroupId'}
+      InstanceType: t2.micro
+      ImageId: ami-0e342d72b12109f91
+      KeyName: !Ref KeyName
+      SubnetId: {'Fn::ImportValue': !Sub '${NetworkStack}-PublicSubnetId'}
+      Tags:
+        - Key: "Name"
+          Value: "Raffael Public Instance"
+
+  PublicInstanceEIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      InstanceId: !Ref PublicEc2Instance
+
+  PrivateEc2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      SecurityGroupIds:
+        # !Ref InstanceSecurityGroup gibt nicht die ID, sondern den Namen zurück!
+        - {'Fn::ImportValue': !Sub '${NetworkStack}-PrivateInstanceSecurityGroupId'}
+      InstanceType: t2.micro
+      ImageId: ami-0e342d72b12109f91
+      KeyName: !Ref KeyName
+      SubnetId: {'Fn::ImportValue': !Sub '${NetworkStack}-PrivateSubnetId'}
+      Tags:
+        -
+          Key: "Name"
+          Value: "Raffael Private Instance"

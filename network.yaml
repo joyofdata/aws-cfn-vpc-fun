@@ -1,8 +1,3 @@
-Parameters:
-  KeyName:
-    Description: The EC2 Key Pair to allow SSH access to the instance
-    Type: AWS::EC2::KeyPair::KeyName
-
 Resources:
   VPC:
     Type: AWS::EC2::VPC
@@ -69,20 +64,6 @@ Resources:
       RouteTableId:
         Ref: PrivateRouteTable
 
-  PublicEc2Instance:
-    Type: AWS::EC2::Instance
-    Properties:
-      SecurityGroupIds:
-        # !Ref InstanceSecurityGroup gibt nicht die ID, sondern den Namen zurück!
-        - !GetAtt PublicInstanceSecurityGroup.GroupId
-      InstanceType: t2.micro
-      ImageId: ami-0e342d72b12109f91
-      KeyName: !Ref KeyName
-      SubnetId: !Ref PublicSubnet
-      Tags:
-        - Key: "Name"
-          Value: "Raffael Public Instance"
-
   PublicInstanceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -94,26 +75,6 @@ Resources:
           ToPort: 22
           CidrIp: 0.0.0.0/0
 
-  PublicInstanceEIP:
-    Type: AWS::EC2::EIP
-    Properties:
-      InstanceId: !Ref PublicEc2Instance
-
-  PrivateEc2Instance:
-    Type: AWS::EC2::Instance
-    Properties:
-      SecurityGroupIds:
-        # !Ref InstanceSecurityGroup gibt nicht die ID, sondern den Namen zurück!
-        - !GetAtt PrivateInstanceSecurityGroup.GroupId
-      InstanceType: t2.micro
-      ImageId: ami-0e342d72b12109f91
-      KeyName: !Ref KeyName
-      SubnetId: !Ref PrivateSubnet
-      Tags:
-        -
-          Key: "Name"
-          Value: "Raffael Private Instance"
-
   PrivateInstanceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -124,3 +85,21 @@ Resources:
           FromPort: 22
           ToPort: 22
           SourceSecurityGroupId: !GetAtt PublicInstanceSecurityGroup.GroupId
+
+Outputs:
+  PublicSubnetId:
+    Value: !Ref PublicSubnet
+    Export:
+      Name: !Sub '${AWS::StackName}-PublicSubnetId'
+  PrivateSubnetId:
+    Value: !Ref PrivateSubnet
+    Export:
+      Name: !Sub '${AWS::StackName}-PrivateSubnetId'
+  PublicInstanceSecurityGroupId:
+    Value: !GetAtt PublicInstanceSecurityGroup.GroupId
+    Export:
+      Name: !Sub '${AWS::StackName}-PublicInstanceSecurityGroupId'
+  PrivateInstanceSecurityGroupId:
+    Value: !GetAtt PrivateInstanceSecurityGroup.GroupId
+    Export:
+      Name: !Sub '${AWS::StackName}-PrivateInstanceSecurityGroupId'
