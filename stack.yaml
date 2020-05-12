@@ -19,6 +19,12 @@ Resources:
       MapPublicIpOnLaunch: True
       VpcId: !Ref VPC
 
+  PrivateSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.1.1.0/24
+      VpcId: !Ref VPC
+
   InternetGateway:
     Type: AWS::EC2::InternetGateway
     DependsOn: VPC
@@ -30,6 +36,11 @@ Resources:
       InternetGatewayId: !Ref InternetGateway
 
   PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+
+  PrivateRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId: !Ref VPC
@@ -50,18 +61,29 @@ Resources:
       RouteTableId:
         Ref: PublicRouteTable
 
-  Ec2Instance:
+  PrivateSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: PrivateSubnet
+      RouteTableId:
+        Ref: PrivateRouteTable
+
+  PublicEc2Instance:
     Type: AWS::EC2::Instance
     Properties:
       SecurityGroupIds:
         # !Ref InstanceSecurityGroup gibt nicht die ID, sondern den Namen zurück!
-        - !GetAtt InstanceSecurityGroup.GroupId
+        - !GetAtt PublicInstanceSecurityGroup.GroupId
       InstanceType: t2.micro
       ImageId: ami-0e342d72b12109f91
       KeyName: !Ref KeyName
       SubnetId: !Ref PublicSubnet
+      Tags:
+        - Key: "Name"
+          Value: "Raffael Public Instance"
 
-  InstanceSecurityGroup:
+  PublicInstanceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Enable SSH access via port 22
@@ -72,7 +94,33 @@ Resources:
           ToPort: 22
           CidrIp: 0.0.0.0/0
 
-  MyEIP:
+  PublicInstanceEIP:
     Type: AWS::EC2::EIP
     Properties:
-      InstanceId: !Ref Ec2Instance
+      InstanceId: !Ref PublicEc2Instance
+
+  PrivateEc2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      SecurityGroupIds:
+        # !Ref InstanceSecurityGroup gibt nicht die ID, sondern den Namen zurück!
+        - !GetAtt PrivateInstanceSecurityGroup.GroupId
+      InstanceType: t2.micro
+      ImageId: ami-0e342d72b12109f91
+      KeyName: !Ref KeyName
+      SubnetId: !Ref PrivateSubnet
+      Tags:
+        -
+          Key: "Name"
+          Value: "Raffael Private Instance"
+
+  PrivateInstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable SSH access via port 22
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          SourceSecurityGroupId: !GetAtt PublicInstanceSecurityGroup.GroupId
