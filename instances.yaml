@@ -26,6 +26,7 @@ Resources:
     Type: AWS::EC2::EIP
     Properties:
       InstanceId: !Ref PublicEc2Instance
+      Domain: vpc
 
   PrivateEc2Instance:
     Type: AWS::EC2::Instance
