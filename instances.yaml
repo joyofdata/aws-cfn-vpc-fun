@@ -8,9 +8,44 @@ Parameters:
     Default: RaffaelNetworkStack
 
 Resources:
+  Ec2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: /
+      Roles:
+        - !Ref S3ReadRole
+
+  S3ReadRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      Path: /
+
+  S3ReadPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: S3ReadPolicy
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - 's3:List*'
+              - 's3:Get*'
+            Resource: '*'
+      Roles:
+        - !Ref S3ReadRole
+
   PublicEc2Instance:
     Type: AWS::EC2::Instance
     Properties:
+      IamInstanceProfile: !Ref Ec2InstanceProfile
       SecurityGroupIds:
         # !Ref InstanceSecurityGroup gibt nicht die ID, sondern den Namen zurück!
         - {'Fn::ImportValue': !Sub '${NetworkStack}-PublicInstanceSecurityGroupId'}
@@ -35,6 +70,7 @@ Resources:
   PrivateEc2Instance:
     Type: AWS::EC2::Instance
     Properties:
+      IamInstanceProfile: !Ref Ec2InstanceProfile
       SecurityGroupIds:
         # !Ref InstanceSecurityGroup gibt nicht die ID, sondern den Namen zurück!
         - {'Fn::ImportValue': !Sub '${NetworkStack}-PrivateInstanceSecurityGroupId'}
