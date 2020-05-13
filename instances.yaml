@@ -21,6 +21,10 @@ Resources:
       Tags:
         - Key: "Name"
           Value: "Raffael Public Instance"
+      UserData: !Base64 |
+          #!/bin/bash
+          apt-get update
+          apt-get install awscli
 
   PublicInstanceEIP:
     Type: AWS::EC2::EIP
@@ -42,3 +46,7 @@ Resources:
         -
           Key: "Name"
           Value: "Raffael Private Instance"
+      UserData: !Base64 |
+        #!/bin/bash
+        apt-get update
+        apt-get install awscli

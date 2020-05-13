@@ -98,14 +98,7 @@ Resources:
         AllocationId: !GetAtt NatEIP.AllocationId
         SubnetId: !Ref PublicSubnet
 
-#  AttachNat:
-#    Type: AWS::EC2::VPCGatewayAttachment
-#    Properties:
-#      VpcId: !Ref VPC
-#      InternetGatewayId: !Ref PrivateNat
-
   NatEIP:
-     #DependsOn: AttachNat
      Type: AWS::EC2::EIP
      Properties:
         Domain: vpc
