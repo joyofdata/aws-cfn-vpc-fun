@@ -59,7 +59,7 @@ Resources:
       UserData: !Base64 |
           #!/bin/bash
           apt-get update
-          apt-get install awscli
+          apt-get install -y awscli
 
   PublicInstanceEIP:
     Type: AWS::EC2::EIP
@@ -85,4 +85,4 @@ Resources:
       UserData: !Base64 |
         #!/bin/bash
         apt-get update
-        apt-get install awscli
+        apt-get install -y awscli
