@@ -112,6 +112,15 @@ Resources:
         DestinationCidrBlock: 0.0.0.0/0
         NatGatewayId: !Ref Nat
 
+  S3GatewayEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      RouteTableIds:
+        - !Ref PublicRouteTable
+        - !Ref PrivateRouteTable
+      ServiceName: !Sub com.amazonaws.${AWS::Region}.s3
+      VpcId: !Ref VPC
+
 Outputs:
   PublicSubnetId:
     Value: !Ref PublicSubnet
